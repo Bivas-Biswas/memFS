@@ -1,0 +1,4 @@
+#ifndef ROLLBACK_OPERATION_H
+#define ROLLBACK_OPERATION_H
+
+#endif
