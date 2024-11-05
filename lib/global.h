@@ -3,12 +3,19 @@
 
 #include <iostream>
 #include <unordered_map>
-#include <vector>
-#include "./types.h"
+#include <functional>
+
+#include "types.h"
+#include "lockfreequeue.h"
+#include "threadpool.h"
+#include "concurrentMap.h"
 
 using namespace std;
 
-std::unordered_map<std::string, FileDescriptor *> fileDescriptorTable;
+ConcurrentMap<std::string, FileDescriptor *> *fileDescriptorTable = nullptr;
 int *multiFileOperationStatus = nullptr;
+
+LockFreeQueue<OperationTask> *ready_queue = nullptr;
+ThreadPool *threadPool = nullptr;
 
 #endif

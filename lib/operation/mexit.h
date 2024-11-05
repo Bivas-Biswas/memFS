@@ -11,16 +11,21 @@ using namespace std;
 void mexit()
 {
 
-    std::unordered_map<string, FileDescriptor *>::iterator itr;
+    fileDescriptorTable->traverse([](auto first, auto second){
+        delete second;
+    });
 
-    for (itr = fileDescriptorTable.begin(); itr != fileDescriptorTable.end(); itr++)
-    {
-        delete itr->second;
-    }
-
-    fileDescriptorTable.clear();
+    fileDescriptorTable->empty();
     
+    delete fileDescriptorTable;
     delete[] multiFileOperationStatus;
+    delete threadPool;
+    delete ready_queue;
+
+    multiFileOperationStatus = nullptr;
+    fileDescriptorTable = nullptr;
+    threadPool = nullptr;
+    ready_queue = nullptr;
 
     exit(0);
 }

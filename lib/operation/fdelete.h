@@ -13,15 +13,12 @@ using namespace std;
 
 int fdelete(std::string fileName, int operationIdx = -1)
 {
+    FileDescriptor *fileDescriptor = fileDescriptorTable->erase(fileName);
 
-    if (fileDescriptorTable.find(fileName) == fileDescriptorTable.end())
+    if (fileDescriptor == nullptr)
     {
         return verifyAndUpdateOperationStatus(operationIdx, OPERATION_STATUS_NOT_EXIST);
     }
-
-    FileDescriptor *fileDescriptor = fileDescriptorTable[fileName];
-
-    fileDescriptorTable.erase(fileName);
 
     delete fileDescriptor;
 

@@ -13,7 +13,7 @@ using namespace std;
 
 int fcreate(string fileName, int operationIdx = -1)
 {
-    if (fileDescriptorTable.find(fileName) != fileDescriptorTable.end())
+    if (fileDescriptorTable->find(fileName))
     {
         return verifyAndUpdateOperationStatus(operationIdx, OPERATION_STATUS_DUPLICATE);
     }
@@ -34,7 +34,7 @@ int fcreate(string fileName, int operationIdx = -1)
     newFileDescriptor->file_content = "";
     newFileDescriptor->isLocked = false;
 
-    fileDescriptorTable[fileName] = newFileDescriptor;
+    fileDescriptorTable->insert(fileName, newFileDescriptor);
 
     return verifyAndUpdateOperationStatus(operationIdx, OPERATION_STATUS_SUCCESS);
 }

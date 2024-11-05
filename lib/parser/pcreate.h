@@ -6,9 +6,63 @@
 #include "../types.h"
 #include "../operation/fcreate.h"
 #include "../utils/printLine.h"
+#include "../utils/waitForOperationFinished.h"
 #include "../constants.h"
+#include "../global.h"
+#include "../utils/initilizeDarray.h"
 
 using namespace std;
+
+void printMultiErrorCreate(SplitVect inputs, int offset, int count);
+
+void pcreate(SplitVect inputs)
+{
+    if (inputs.size() == 0)
+    {
+        printLine("error: provide a <file_name> with create!!");
+        return;
+    }
+
+    int noOfFiles = 1;
+    int offset = 0;
+
+    if (inputs[0] == "-n")
+    {
+        size_t pos;
+        noOfFiles = std::stoi(inputs[1], &pos);
+
+        if (pos != inputs[1].size())
+        {
+            printLine("Invalid parameter <no_of_files>!!");
+            return;
+        }
+
+        offset = 2;
+    }
+
+    int countGivenFiles = inputs.size() - offset;
+    if (countGivenFiles != noOfFiles)
+    {
+        printLine("Missmatch between <no_of_files> and actual given file count!!");
+        return;
+    }
+
+    multiFileOperationStatus = initilizeDarray(noOfFiles);
+
+    for (int i = 0; i < noOfFiles; i++)
+    {
+        ready_queue->enqueue(
+            [=]()
+            {
+                fcreate(inputs[i + offset], i);
+            });
+    }
+
+    printMultiErrorCreate(inputs, offset, noOfFiles);
+
+    delete[] multiFileOperationStatus;
+    multiFileOperationStatus = nullptr;
+}
 
 void printMultiErrorCreate(SplitVect inputs, int offset, int count)
 {
@@ -18,10 +72,14 @@ void printMultiErrorCreate(SplitVect inputs, int offset, int count)
     int noOfDuplicateFiles = 0;
     int noOfMemoryFullFiles = 0;
 
+    waitForOperationFinished(count, multiFileOperationStatus, OPERATION_STATUS_DEFAULT);
+
+    // extract the result
     for (int i = 0; i < count; i++)
     {
         int code = multiFileOperationStatus[i];
         int idx = i + offset;
+
         switch (code)
         {
         case OPERATION_STATUS_DUPLICATE:
@@ -77,49 +135,6 @@ void printMultiErrorCreate(SplitVect inputs, int offset, int count)
     }
 
     printLine(msg);
-}
-
-void pcreate(SplitVect inputs)
-{
-    if (inputs.size() == 0)
-    {
-        printLine("error: provide a <file_name> with create!!");
-        return;
-    }
-
-    int noOfFiles = 1;
-    int offset = 0;
-
-    if (inputs[0] == "-n")
-    {
-        size_t pos;
-        noOfFiles = std::stoi(inputs[1], &pos);
-
-        if (pos != inputs[1].size())
-        {
-            printLine("Invalid parameter <no_of_files>!!");
-            return;
-        }
-
-        offset = 2;
-    }
-
-    int countGivenFiles = inputs.size() - offset;
-    if (countGivenFiles != noOfFiles)
-    {
-        printLine("Missmatch between <no_of_files> and actual given file count!!");
-        return;
-    }
-
-    multiFileOperationStatus = new int[noOfFiles];
-
-    for (int i = 0; i < noOfFiles; i++)
-    {
-        multiFileOperationStatus[i] = OPERATION_STATUS_DEFAULT;
-        fcreate(inputs[i + offset], i);
-    }
-
-    printMultiErrorCreate(inputs, offset, noOfFiles);
 }
 
 #endif

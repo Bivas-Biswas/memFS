@@ -11,8 +11,9 @@ using namespace std;
 
 string fread(string fileName)
 {
+    FileDescriptor *fileDescriptor = fileDescriptorTable->find(fileName);
 
-    if (fileDescriptorTable.find(fileName) == fileDescriptorTable.end())
+    if (fileDescriptor == nullptr)
     {
         std::string errorMsg = "error: ";
         errorMsg.append(fileName).append(" does not exist!!");
@@ -20,7 +21,7 @@ string fread(string fileName)
         throw std::runtime_error(errorMsg);
     }
 
-    return fileDescriptorTable[fileName]->file_content;
+    return fileDescriptor->file_content;
 }
 
 #endif

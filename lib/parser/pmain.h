@@ -16,6 +16,7 @@
 #include "./pexit.h"
 #include "../operation/mclear.h"
 #include "../operation/mhelp.h"
+#include "../global.h"
 
 using namespace std;
 

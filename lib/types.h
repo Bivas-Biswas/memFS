@@ -3,11 +3,13 @@
 
 #include <iostream>
 #include <vector>
+#include <functional>
 #include <chrono>
 using namespace std;
 
 typedef std::vector<std::string> SplitVect;
 typedef std::chrono::time_point<std::chrono::system_clock> scTime;
+typedef std::function<void()> OperationTask;
 
 typedef struct
 {

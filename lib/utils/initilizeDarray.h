@@ -1,0 +1,22 @@
+#ifndef multiFileOperationStatus_h
+#define multiFileOperationStatus_h
+
+#include<iostream>
+
+#include "printLine.h"
+
+int *initilizeDarray(int size, int defaultValue=0){
+    int *darry = new int[size];
+
+    for(int i = 0; i < size; i++){
+        darry[i] = defaultValue;
+    }
+
+    if(!darry){
+        printLine("Error: Darry is not initialized.");
+        return nullptr;
+    }
+
+    return darry;
+}
+#endif

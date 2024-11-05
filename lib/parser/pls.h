@@ -20,30 +20,34 @@ void pls(SplitVect inputs)
     if (inputs.size() == 0)
     {
 
-        for (itr = fileDescriptorTable.begin(); itr != fileDescriptorTable.end(); itr++)
-        {
-            printLine(itr->second->name);
-        }
+        fileDescriptorTable->traverse(
+            [](auto key, auto value)
+            {
+                printLine(value->name);
+            });
+
+        // for (itr = fileDescriptorTable.begin(); itr != fileDescriptorTable.end(); itr++)
+        // {
+        //     printLine(itr->second->name);
+        // }
         return;
     }
 
     if (inputs[0] == "-l")
     {
         std::cout << "size\tcreated\t\tlast modified\tfilename" << std::endl;
-        for (itr = fileDescriptorTable.begin(); itr != fileDescriptorTable.end(); itr++)
-        {
-            std::string key = itr->first;
-            FileDescriptor *value = itr->second;
-
-            std::string lineText = std::to_string(value->size);
-            lineText.append("\t");
-            lineText.append(formatDate(value->created_at));
-            lineText.append("\t");
-            lineText.append(formatDate(value->last_modified));
-            lineText.append("\t");
-            lineText.append(value->name);
-            printLine(lineText);
-        }
+        fileDescriptorTable->traverse(
+            [](auto key, auto value)
+            {
+                std::string lineText = std::to_string(value->size);
+                lineText.append("\t");
+                lineText.append(formatDate(value->created_at));
+                lineText.append("\t");
+                lineText.append(formatDate(value->last_modified));
+                lineText.append("\t");
+                lineText.append(value->name);
+                printLine(lineText);
+            });
     }
     else
     {

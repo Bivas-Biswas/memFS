@@ -17,7 +17,6 @@ void clearTerminal() {
 }
 
 void mclear(SplitVect inputs){
-    std::cout<< "I am in mclear" << std::endl;
     clearTerminal();
 }
 

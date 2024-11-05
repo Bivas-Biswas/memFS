@@ -5,6 +5,8 @@
 
 #include "../global.h"
 
+using namespace std;
+
 int verifyAndUpdateOperationStatus(int operationIdx = -1, int operationCode = -1)
 {
     if (operationIdx != -1)

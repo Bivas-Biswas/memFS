@@ -11,9 +11,11 @@
 
 using namespace std;
 
-int fwrite(std::string fileName, std::string fileContent, int operationIdx = -1)
+int fwrite(std::string fileName, std::string fileContent,  scTime timeStamp, int operationIdx = -1)
 {
-    if (fileDescriptorTable.find(fileName) == fileDescriptorTable.end())
+    FileDescriptor *fileDescriptor = fileDescriptorTable->find(fileName);
+
+    if (fileDescriptor == nullptr)
     {
         return verifyAndUpdateOperationStatus(operationIdx, OPERATION_STATUS_NOT_EXIST);
     }
@@ -23,10 +25,14 @@ int fwrite(std::string fileName, std::string fileContent, int operationIdx = -1)
         return verifyAndUpdateOperationStatus(operationIdx, OPERATION_STATUS_FILE_SIZE_EXECCED);
     }
 
-    FileDescriptor *fileDescripttor = fileDescriptorTable[fileName];
-    fileDescripttor->file_content = fileContent;
-    fileDescripttor->last_modified = std::chrono::system_clock::now();
-    fileDescripttor->size = fileContent.size();
+    if (timeStamp < fileDescriptor->last_modified)
+    {
+        return verifyAndUpdateOperationStatus(operationIdx, OPERATION_STATUS_WRITE_MISS_TIME);
+    }
+
+    fileDescriptor->file_content = fileContent;
+    fileDescriptor->last_modified = timeStamp;
+    fileDescriptor->size = fileContent.size();
 
     return verifyAndUpdateOperationStatus(operationIdx, OPERATION_STATUS_SUCCESS);
 }
