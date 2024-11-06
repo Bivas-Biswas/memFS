@@ -28,8 +28,7 @@ Operation operationMap[] = {
     {"ls", pls},
     {"clear", mclear},
     {"exit", pexit},
-    {"help", mhelp}
-};
+    {"help", mhelp}};
 
 bool verifyInput(std::string inputStr)
 {
@@ -45,6 +44,7 @@ void checkOperattion(std::string inputStr)
 {
     if (verifyInput(inputStr))
     {
+        perror(UNKNOWN_OPERATION);
         return;
     }
 
@@ -65,7 +65,7 @@ void checkOperattion(std::string inputStr)
         }
     }
 
-    perror(inputs, UNKNOWN_OPERATION);
+    perror(UNKNOWN_OPERATION);
 }
 
 void pmain()

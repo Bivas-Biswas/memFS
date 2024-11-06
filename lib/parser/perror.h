@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void perror(SplitVect inputs, int errorCode)
+void perror(int errorCode)
 {
     switch (errorCode)
     {
