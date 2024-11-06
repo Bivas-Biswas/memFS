@@ -8,11 +8,17 @@
 #include "../types.h"
 #include "../global.h"
 #include "../utils/verifyAndUpdateOperationStatus.h"
+#include "../utils/hasTxtExtension.h"
 
 using namespace std;
 
 int fcreate(string fileName, int operationIdx = -1)
 {
+    if (!hasTxtExtension(fileName))
+    {
+        return verifyAndUpdateOperationStatus(operationIdx, OPERATION_STATUS_FILE_EXTENSION_NOT_TXT);
+    }
+
     if (fileDescriptorTable->find(fileName))
     {
         return verifyAndUpdateOperationStatus(operationIdx, OPERATION_STATUS_DUPLICATE);

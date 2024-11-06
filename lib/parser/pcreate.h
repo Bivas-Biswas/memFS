@@ -68,9 +68,11 @@ void printMultiErrorCreate(SplitVect inputs, int offset, int count)
 {
     std::string duplicateFiles;
     std::string memoryFullFiles;
+    std::string fileNameHaveNotTXTFiles;
     std::string msg;
     int noOfDuplicateFiles = 0;
     int noOfMemoryFullFiles = 0;
+    int noOfFileNameHaveNotTXTFiles = 0;
 
     waitForOperationFinished(count, multiFileOperationStatus, OPERATION_STATUS_DEFAULT);
 
@@ -100,12 +102,21 @@ void printMultiErrorCreate(SplitVect inputs, int offset, int count)
             noOfMemoryFullFiles++;
             break;
 
+        case OPERATION_STATUS_FILE_EXTENSION_NOT_TXT:
+            if (!fileNameHaveNotTXTFiles.empty())
+            {
+                fileNameHaveNotTXTFiles.append(", ");
+            }
+            fileNameHaveNotTXTFiles.append(inputs[idx]);
+            noOfFileNameHaveNotTXTFiles++;
+            break;
+
         default:
             break;
         }
     }
 
-    if (memoryFullFiles.empty() && duplicateFiles.empty())
+    if (memoryFullFiles.empty() && duplicateFiles.empty() && fileNameHaveNotTXTFiles.empty())
     {
         msg = count == 1 ? "file created successfully." : "files created successfully.";
     }
@@ -126,7 +137,14 @@ void printMultiErrorCreate(SplitVect inputs, int offset, int count)
             msg.append(" already exist.");
         }
 
-        int totalError = noOfDuplicateFiles + noOfMemoryFullFiles;
+        if (!fileNameHaveNotTXTFiles.empty())
+        {
+            msg.append(count == 1 ? "file " : "files ");
+            msg.append(fileNameHaveNotTXTFiles);
+            msg.append(" only .txt supported.");
+        }
+
+        int totalError = noOfDuplicateFiles + noOfMemoryFullFiles + noOfFileNameHaveNotTXTFiles;
 
         if (totalError < count)
         {
