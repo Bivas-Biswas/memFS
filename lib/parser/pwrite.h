@@ -78,10 +78,12 @@ void printMultiErrorWrite(SplitVect inputs, int offset, int count)
 
     waitForOperationFinished(count, multiFileOperationStatus, OPERATION_STATUS_DEFAULT);
 
-    for(int i=0; i < count; i++){
-        int code = multiFileOperationStatus[i];
-        std::cout<< "pwrite " << code << std::endl;
-    }
+    // // to debug
+    // for(int i=0; i < count; i++){
+    //     int code = multiFileOperationStatus[i];
+    //     std::cout<< "pwrite " << code << std::endl;
+    // }
+
     for (int i = 0; i < count; i++)
     {
         int code = multiFileOperationStatus[i];
