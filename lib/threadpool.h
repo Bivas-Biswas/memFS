@@ -30,7 +30,6 @@ class ThreadPool
     std::atomic<bool> stop;
 
     LockFreeQueue<OperationTask> *ready_queue;
-    
 
 public:
     // Constructor
@@ -84,7 +83,7 @@ public:
             }
 
             // Get the task assigned by the assigner thread
-            operationTask = std::move(worker_tasks[id]);
+            operationTask = worker_tasks[id];
             worker_tasks[id] = nullptr; // Clear the task after acquiring it
 
             if (operationTask)
@@ -152,6 +151,5 @@ public:
         return -1; // No free workers available
     }
 };
-
 
 #endif

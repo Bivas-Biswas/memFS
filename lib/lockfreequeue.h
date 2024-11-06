@@ -78,7 +78,7 @@ public:
                 }
                 else
                 {
-                    result = std::move(next->value);
+                    result = next->value;
                     if (head.compare_exchange_weak(oldHead, next))
                     {
                         break;
