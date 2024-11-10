@@ -18,4 +18,6 @@ int *multiFileOperationStatus = nullptr;
 LockFreeQueue<OperationTask> *ready_queue = nullptr;
 ThreadPool *threadPool = nullptr;
 
+std::atomic<int> atomicCounter(0);
+
 #endif

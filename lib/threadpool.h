@@ -2,153 +2,121 @@
 #define THREADPOOL_H
 
 #include <iostream>
-#include <fstream>
 #include <vector>
 #include <thread>
 #include <chrono>
 #include <atomic>
+#include <functional>
+#include <exception>
 
-// #include "global.h"
-#include "types.h"
-#include "lockfreequeue.h"
+typedef std::function<void()> OperationTask;
 
-class ThreadPool
-{
-    // Vector of worker threads
+class ThreadPool {
     std::vector<std::thread> workers;
-
-    // Assigner thread
     std::thread assigner;
-
-    // Flags to indicate whether each worker thread is busy or free
     std::vector<std::atomic<bool>> is_worker_busy;
-
-    // Task assigned to each worker
-    std::vector<OperationTask> worker_tasks;
-
-    // Flag to stop the thread pool
+    std::vector<std::atomic<OperationTask*>> worker_tasks;  // Changed to atomic pointer
     std::atomic<bool> stop;
-
-    LockFreeQueue<OperationTask> *ready_queue;
+    LockFreeQueue<OperationTask>* ready_queue;
 
 public:
-    // Constructor
-    ThreadPool(int num_threads, LockFreeQueue<OperationTask> *ready_queue_ptr)
-        : stop(false), is_worker_busy(num_threads), worker_tasks(num_threads), ready_queue(ready_queue_ptr)
+    ThreadPool(int num_threads, LockFreeQueue<OperationTask>* ready_queue_ptr)
+        : stop(false), 
+          is_worker_busy(num_threads), 
+          worker_tasks(num_threads),
+          ready_queue(ready_queue_ptr)
     {
-        // Initialize all workers as free
-        for (int i = 0; i < num_threads; ++i)
-        {
+        for (int i = 0; i < num_threads; ++i) {
             is_worker_busy[i] = false;
-            worker_tasks[i] = nullptr; // No task initially
+            worker_tasks[i].store(nullptr);
             workers.emplace_back(&ThreadPool::workerThread, this, i);
         }
-        // Start the assigner thread
         assigner = std::thread(&ThreadPool::assignerThread, this);
     }
 
-    // Destructor
-    ~ThreadPool()
-    {
-        // Set stop flag
+    ~ThreadPool() {
         stop.store(true);
-
-        // Join all worker threads
-        for (std::thread &worker : workers)
-        {
-            if (worker.joinable())
-            {
+        
+        for (std::thread& worker : workers) {
+            if (worker.joinable()) {
                 worker.join();
             }
         }
-        // Join assigner thread
-        if (assigner.joinable())
-        {
+        
+        if (assigner.joinable()) {
             assigner.join();
+        }
+
+        // Cleanup any remaining tasks
+        for (auto& task_ptr : worker_tasks) {
+            OperationTask* task = task_ptr.load();
+            if (task != nullptr) {
+                delete task;
+            }
         }
     }
 
-    // Worker thread function
-    void workerThread(int id)
-    {
-        while (!stop.load())
-        {
-            OperationTask operationTask;
-
-            // Check if the worker has been assigned a task
-            if (!worker_tasks[id])
-            {
-                // Sleep to avoid busy-waiting
+    void workerThread(int id) {
+        while (!stop.load(std::memory_order_acquire)) {
+            OperationTask* task_ptr = worker_tasks[id].load(std::memory_order_acquire);
+            
+            if (task_ptr == nullptr) {
+                std::this_thread::yield();  // Better than busy waiting
                 continue;
             }
 
-            // Get the task assigned by the assigner thread
-            operationTask = worker_tasks[id];
-            worker_tasks[id] = nullptr; // Clear the task after acquiring it
-
-            if (operationTask)
-            {
-                // Execute the task
-                operationTask();
-
-                // // move it to blocked queue
-                // blocked_tasks.enqueue(task);
-
-                // Mark worker as free after finishing the task
-                is_worker_busy[id].store(false);
-            }
-        }
-    }
-
-    // Assigner thread function
-    void assignerThread()
-    {
-        while (!stop.load())
-        {
-            OperationTask operationTask;
-
-            // Lock the queue and check if there are tasks to assign
-            {
-                if (ready_queue->empty())
-                {
-                    // Sleep if no tasks are available
-                    continue;
-                }
-            }
-
-            // Find a free worker
-            int free_worker_id = getFreeWorker();
-            if (free_worker_id != -1)
-            {
-                {
-                    if (!ready_queue->empty())
-                    {
-                        // Get a task from the queue
-                        ready_queue->dequeue(operationTask);
+            // Get the task and clear the slot
+            if (worker_tasks[id].compare_exchange_strong(task_ptr, nullptr)) {
+                try {
+                    if (task_ptr && *task_ptr) {  // Double check validity
+                        (*task_ptr)();  // Execute the task
                     }
                 }
-
-                if (operationTask)
-                {
-                    // Assign the task to the free worker
-                    worker_tasks[free_worker_id] = std::move(operationTask);
-                    is_worker_busy[free_worker_id].store(true); // Mark worker as busy
+                catch (const std::exception& e) {
+                    std::cerr << "Task execution failed: " << e.what() << std::endl;
                 }
+                
+                delete task_ptr;  // Clean up the task
+                is_worker_busy[id].store(false, std::memory_order_release);
             }
         }
     }
 
-    // Utility function to find the first free worker thread
-    int getFreeWorker()
-    {
-        for (int i = 0; i < is_worker_busy.size(); ++i)
-        {
-            if (!is_worker_busy[i].load())
-            {
-                return i; // Return the ID of the free worker
+    void assignerThread() {
+        while (!stop.load(std::memory_order_acquire)) {
+            if (ready_queue->empty()) {
+                std::this_thread::yield();
+                continue;
+            }
+
+            int free_worker_id = getFreeWorker();
+            if (free_worker_id != -1) {
+                OperationTask task;
+                if (ready_queue->dequeue(task)) {
+                    OperationTask* task_ptr = new OperationTask(std::move(task));
+                    
+                    // Try to assign the task
+                    OperationTask* expected = nullptr;
+                    if (worker_tasks[free_worker_id].compare_exchange_strong(
+                            expected, task_ptr)) {
+                        is_worker_busy[free_worker_id].store(true, std::memory_order_release);
+                    } else {
+                        delete task_ptr;  // Failed to assign, clean up
+                    }
+                }
+            }
+            std::this_thread::yield();
+        }
+    }
+
+    int getFreeWorker() {
+        for (size_t i = 0; i < is_worker_busy.size(); ++i) {
+            bool expected = false;
+            if (is_worker_busy[i].compare_exchange_strong(expected, true)) {
+                return static_cast<int>(i);
             }
         }
-        return -1; // No free workers available
+        return -1;
     }
 };
 

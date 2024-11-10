@@ -26,8 +26,6 @@ void mexit()
     fileDescriptorTable = nullptr;
     threadPool = nullptr;
     ready_queue = nullptr;
-
-    exit(0);
 }
 
 #endif

@@ -12,6 +12,7 @@ using namespace std;
 void pexit(SplitVect inputs){
     printLine("exiting memFS");
     mexit();
+    exit(0);
 }
 
 #endif

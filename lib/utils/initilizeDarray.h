@@ -4,8 +4,10 @@
 #include<iostream>
 
 #include "printLine.h"
+#include "../global.h"
 
 int *initilizeDarray(int size, int defaultValue=0){
+    atomicCounter.store(0);
     int *darry = new int[size];
 
     for(int i = 0; i < size; i++){
