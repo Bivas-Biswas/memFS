@@ -2,7 +2,7 @@
 CXX = g++
 
 # Compiler flags
-CXXFLAGS =
+CXXFLAGS = -std=c++17
 
 # Source files
 SRC1 = main.cpp

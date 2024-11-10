@@ -11,7 +11,12 @@ int verifyAndUpdateOperationStatus(int operationIdx = -1, int operationCode = -1
 {
     if (operationIdx != -1)
     {
-        multiFileOperationStatus[operationIdx] = operationCode;
+        if (multiFileOperationStatus)
+        {
+            multiFileOperationStatus[operationIdx] = operationCode;
+        }
+        ++atomicCounter;
+        // std::cout << atomicCounter.load() << std::endl;
     }
 
     return operationCode;

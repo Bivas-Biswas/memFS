@@ -47,12 +47,10 @@ void pdelete(SplitVect inputs)
         return;
     }
 
-    multiFileOperationStatus = initilizeDarray(noOfFiles);
+    multiFileOperationStatus = initilizeDarray(noOfFiles, OPERATION_STATUS_DEFAULT);
 
     for (int i = 0; i < noOfFiles; i++)
     {
-
-        multiFileOperationStatus[i] = OPERATION_STATUS_DEFAULT;
         ready_queue->enqueue(
             [=]()
             {
@@ -73,6 +71,12 @@ void printMultiErrorDelete(SplitVect inputs, int offset, int count)
     int noOFNotExistFiles = 0;
 
     waitForOperationFinished(count, multiFileOperationStatus, OPERATION_STATUS_DEFAULT);
+
+    // // to debug
+    // for(int i=0; i < count; i++){
+    //     int code = multiFileOperationStatus[i];
+    //     std::cout<< "pdelete " << code << std::endl;
+    // }
 
     for (int i = 0; i < count; i++)
     {
