@@ -15,6 +15,7 @@ TARGET2 = generateOperationFileInput
 TARGET3 = benchmark
 
 # Default rule to build both targets
+# all: $(TARGET3)
 all: $(TARGET1) $(TARGET2) $(TARGET3)
 
 $(TARGET1): $(SRC1)

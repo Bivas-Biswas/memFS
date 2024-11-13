@@ -1,8 +1,8 @@
 #!/usr/bin/bash
 make clean && make
 
-operations=(100 1000 10000 100000)
-noOfInputFiles=5
+operations=(100 1000 10000)
+noOfInputFiles=1
 
 # generate filenames
 rootDir="input_files"

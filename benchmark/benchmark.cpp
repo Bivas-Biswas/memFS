@@ -36,7 +36,7 @@ typedef std::vector<FileOperation> Operations;
 
 Operations readFile(std::string inputFileName)
 {
-    std::ifstream inputFile("./10000/1.txt");
+    std::ifstream inputFile(inputFileName);
     if (!inputFile.is_open())
     {
         std::cerr << "Error opening file!" << std::endl;
@@ -157,22 +157,22 @@ int main(int argc, char *argv[])
 
     Operations operations = readFile(inputFile);
 
-    pid_t pid = fork();
-    if (pid == -1)
-    {
-        std::cerr << "Failed to fork process." << std::endl;
-        return 1;
-    }
-    else if (pid == 0)
-    {
+    // pid_t pid = fork();
+    // if (pid == -1)
+    // {
+    //     std::cerr << "Failed to fork process." << std::endl;
+    //     return 1;
+    // }
+    // else if (pid == 0)
+    // {
         run(operations, noOfThread);
-        exit(0);
-    }
-    else
-    {
-        int status;
-        waitpid(pid, &status, 0);
-    }
+        // exit(0);
+    // }
+    // else
+    // {
+    //     int status;
+    //     waitpid(pid, &status, 0);
+    // }
 
     return 0;
 }
