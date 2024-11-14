@@ -1,7 +1,32 @@
-# memFS
+## How to run memFS
 
-create -n 3 todo1.txt todo2.txt todo3.txt
-write -n 4 todo1.txt 1 todo1.txt 2 todo1.txt 3 todo1.txt 4
+1. build the code
+```
+make
+```
 
-write -n 2 todo1.txt "Wake up at 7 AM" todo4.txt "hhhh"
-delete -n 3 todo1.txt todo2.txt todo3.txt
+2. run `./memFS` in the
+```
+./memFS
+```
+
+## Command Usage
+
+```
+to create a file    - create [-n (number of files)] [filenames (in order)]
+to write to a file  - write [-n (number of files)] [<filename> "<file_content>"]
+to remove a file    - delete [-n (number of files)] [filenames (in any order)]
+to read a file      - read [filename]
+to list all files   - ls, ls -l
+to clear terminal   - clear
+to exit from        - exit
+to see all cmd      - help
+```
+
+## How to find design doc and code
+
+1. search the file `designdoc.txt` in root dir every thing is written there.
+
+## How to find benchmark report and code
+1. go to the folder `/benchmark`
+2. serach the file `benchmark.txt` every thing is written there

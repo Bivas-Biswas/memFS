@@ -1,0 +1,89 @@
+-------------------------------------------------
+ System Specification
+-------------------------------------------------
+
+OS: Pop!_OS 22.04 LTS x86_64
+Kernel: 6.9.3-76060903-generic
+CPU: AMD Ryzen 5 3550H with Radeon Vega Mobile Gfx (8) @ 2.100GHz 
+GPU: AMD ATI Radeon Vega Series / Radeon Vega Mobile Series 
+GPU: NVIDIA GeForce GTX 1050 3 GB Max-Q 
+Memory: 4122MiB / 17856MiB 
+
+----------------------------------------------------
+ Benchmark Results
+----------------------------------------------------
+
+1. 100 read write delete operation
+
+-----------------------------------------------------------------------------------------
+No threads  | No of Operation   | Avg Latency(ms)   | CPU Usage(%)  | Memory Usage(KB)  |
+-----------------------------------------------------------------------------------------
+ 1          | 100*3             | 1                 | 0             | 4096              |
+-----------------------------------------------------------------------------------------
+ 2          | 100*3             | 8                 | 0             | 4224              |
+-----------------------------------------------------------------------------------------
+ 4          | 100*3             | 1                 | 0             | 4096              |
+-----------------------------------------------------------------------------------------
+ 8          | 100*3             | 12                | 7             | 4096              |
+-----------------------------------------------------------------------------------------
+ 16         | 100*3             | 14                | 10            | 3968              |
+-----------------------------------------------------------------------------------------
+
+In this case the Latency and cpu usage increase because of thread overheads.
+
+2. 1000 read write delete operation
+
+-----------------------------------------------------------------------------------------
+No threads  | No of Operation   | Avg Latency(ms)   | CPU Usage(%)  | Memory Usage(KB)  |
+-----------------------------------------------------------------------------------------
+ 1          | 1000*3            | 10                | 3             | 6636              |
+-----------------------------------------------------------------------------------------
+ 2          | 1000*3            | 7                 | 3             | 6252              |
+-----------------------------------------------------------------------------------------
+ 4          | 1000*3            | 7                 | 4             | 6252              |
+-----------------------------------------------------------------------------------------
+ 8          | 1000*3            | 15                | 10            | 6754              |
+-----------------------------------------------------------------------------------------
+ 16         | 1000*3            | 26                | 19            | 6768              |
+-----------------------------------------------------------------------------------------
+
+Also, In this case the Latency and cpu usage increase because of thread overheads.
+
+3. 10000 read write delete operation
+
+-----------------------------------------------------------------------------------------
+No threads  | No of Operation   | Avg Latency(ms)   | CPU Usage(%)  | Memory Usage(KB)  |
+-----------------------------------------------------------------------------------------
+ 1          | 10000*3           | 116               | 37            | 34880             |
+-----------------------------------------------------------------------------------------
+ 2          | 10000*3           | 90                | 39            | 30404             |
+-----------------------------------------------------------------------------------------
+ 4          | 10000*3           | 67                | 45            | 28736             |
+-----------------------------------------------------------------------------------------
+ 8          | 10000*3           | 174               | 134           | 35504             |
+-----------------------------------------------------------------------------------------
+ 16         | 10000*3           | 318               | 256           | 34236             |
+-----------------------------------------------------------------------------------------
+
+In this case the avg Latency decrease till 4 thread but it increased after that.
+because of the data structure used to store the files which is unordermap.
+i applied fine grained lock as divide the unordermap map as multiple shard. But it is not working
+as number of thread increased.
+The main reason is the distribution of files across the shrad which is
+based on a simple hash functiion with filename so distribution of files will be random.
+
+Future work to used a load balacing algo to increased the performance and distribute file across shard.
+
+-----------------------------------------------
+ How to run Benchmark code
+-----------------------------------------------
+
+1. run createinputs.sh 
+    - bash script which will create the all input_files necesaary for the Benchmark
+    - it will run Makefile
+    - it will run generateinputfilenames.cpp # it generate input filenames
+    - it will run generateOperationFileInput.cpp # it generate file operations
+
+2. run runbenchmark.sh 
+    - bash script which will run the Benchmark against all the input files and output will be save in log.txt file
+    - it will run benchmark.cpp #
