@@ -1,0 +1,85 @@
+-----------------------------------------
+    Design Decision
+-----------------------------------------
+
+1. Folder modularity:
+
+used modularity structure for better code readibility and reusibility
+in lib folder i create 3 sub folder 
+operation -> where all file operation function present
+parser  ->  where all parser realted function, how to read the string and call the appropiate operation call and
+            show output and error handling
+utils   ->  where all resuseable function present
+
+and some other single files
+types.cpp   -> where all types defined
+global.h    -> all global data structure defined
+constants   -> all constants variable defined
+and other data structure concurrentMap, lockfreequeue and threadpool.
+
+2. Show the Output and Error:
+
+for single operation showing error and output is very easy.
+but for multi operation there are many possible error and answer.
+so, i used an dynamic array multiFileOperationStatus same size as the no of operation.
+each operation will call verifyAndUpdateOperationStatus and update the status to the array.
+
+after all operation complete the main thread, see the multiFileOperationStatus array show the output
+and error.
+
+2. Thread pool
+
+here multi operation possible and there is no limit of no_of_operation.
+to increase performance i used threadpool pool of size 10.
+so some operation will work parallely.
+assigner thread is pick the task from queue and assigned it to a free thread from the pool
+
+3. lock free queue
+
+for threadpool a queue data structure required, where main thread will enqueue the operation
+and assigner will dequeue form the queue.
+this operation become bottleneck for the whole system. so i implemented and lockfreequeue data 
+structure for this.
+
+4. sharded unordermap
+
+to store the files the best data structure is unordermap, but during concurrent operation, the whole
+unordermap need to be locked. which is became a bottleneck for the system.
+so i used a sharded unordermap map. means instead of using single map, i used multiple map.
+and files distributed across the shard using a hash function.
+
+
+-----------------------------------------
+    Complete Architechture
+-----------------------------------------
+
+1. main thread will parse the inputs and enqueue the operation in ready_queue and it goes to busy waiting.
+2. assigner thread will pick the operation and assigned to free thread.
+3. thread will run the operation function and update the status is multiFileOperationStatus array and an atomic counter.
+4. main thread wait for the atomic counter became same as no_of_operation.
+5. main thread log output after analysing the multiFileOperationStatus array.
+
+
+-----------------------------------------
+    Challenges faced
+-----------------------------------------
+1. Fine grained lock implementaion
+
+to implement the concurrentMap's atomic operation was challenging for me.
+after lot of research and chatgpt i came up with this idea. to implement fine-grained lock
+use sharded unordermap. 
+
+2. to show multilevel error and main thread wait function 
+
+was facing problem, how to show the error and output like, 
+during multiple create operation it is possible to some file exist and some not.
+so i have to show the error as well as the successfully message.
+so for this used multiFileOperationStatus array to implement this.
+
+-----------------------------------------
+    Future Improvement
+-----------------------------------------
+
+1. load balacing algo in shard which is mentioned in benchmark.txt clearly with results.
+2. sometime during benchmark it stuck in the infinite loop this is only for benchmark code not 
+    the actual memFS code.

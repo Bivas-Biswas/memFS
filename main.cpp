@@ -11,7 +11,7 @@ using namespace std;
 
 int main()
 {
-    fileDescriptorTable = new ConcurrentMap<std::string, FileDescriptor *>(1);
+    fileDescriptorTable = new ConcurrentMap<std::string, FileDescriptor *>(5);
 
     if (fileDescriptorTable == nullptr)
     {
@@ -27,7 +27,7 @@ int main()
         exit(-1);
     }
 
-    threadPool = new ThreadPool(1, ready_queue);
+    threadPool = new ThreadPool(5, ready_queue);
 
     if (threadPool == nullptr)
     {
